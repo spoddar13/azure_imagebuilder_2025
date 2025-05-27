@@ -6,7 +6,6 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 # Step 1: Import module
 Import-Module Az.Accounts
 
-
 # Step 2: get existing context
 #$currentAzContext = Get-AzContext
 
@@ -46,7 +45,7 @@ $identityNameResourceId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageR
 $identityNamePrincipalId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName).PrincipalId
 
 #Downlaod JSON config file to assign permissions to the identity
-$myRoleImageCreationUrl = 'https://raw.githubusercontent.com/spoddar13/azure_imagebuilder/main/RoleImageCreation.json'
+$myRoleImageCreationUrl = 'https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/Json/RoleImageCreation.json'
 $myRoleImageCreationPath = "myRoleImageCreation.json"
 Invoke-WebRequest -Uri $myRoleImageCreationUrl -OutFile $myRoleImageCreationPath -UseBasicParsing
 
