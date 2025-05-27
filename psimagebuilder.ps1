@@ -45,9 +45,10 @@ $identityNameResourceId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageR
 $identityNamePrincipalId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName).PrincipalId
 
 #Downlaod JSON config file to assign permissions to the identity
-$myRoleImageCreationUrl = 'https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/Json/RoleImageCreation.json'
+$myRoleImageCreationUrl = 'https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/RoleImageCreation.json'
 $myRoleImageCreationPath = "myRoleImageCreation.json"
 Invoke-WebRequest -Uri $myRoleImageCreationUrl -OutFile $myRoleImageCreationPath -UseBasicParsing
+
 
 
 #update role definition template
@@ -68,49 +69,4 @@ $RoleAssignParams = @{
 }
 New-AzRoleAssignment @RoleAssignParams
 
-
-$sigGalleryName = "MyImageGallary"
-$imageDefName = "win11avdmultiWithOffice"
-
-# Create the gallery
-New-AzGallery -GalleryName $sigGalleryName -ResourceGroupName $imageResourceGroup  -Location $location
-
-# Create the gallery definition
-New-AzGalleryImageDefinition -GalleryName $sigGalleryName -ResourceGroupName $imageResourceGroup -Location $location -Name $imageDefName -OsState generalized -OsType 'Windows' -Publisher 'myCo' -Offer 'Windows' -Sku 'win11-24h2-ent'
-
-
-$templateUrl = "https://raw.githubusercontent.com/spoddar13/azure_imagebuilder/main/armTemplateWVD.json"
-$templateFilePath = "armTemplateWVD.json"
-
-Invoke-WebRequest -Uri $templateUrl -OutFile $templateFilePath -UseBasicParsing
-
-((Get-Content -path $templateFilePath -Raw) -replace '<subscriptionID>', $subscriptionID) | Set-Content -Path $templateFilePath
-((Get-Content -path $templateFilePath -Raw) -replace '<rgName>', $imageResourceGroup) | Set-Content -Path $templateFilePath
-((Get-Content -path $templateFilePath -Raw) -replace '<region>', $location) | Set-Content -Path $templateFilePath
-((Get-Content -path $templateFilePath -Raw) -replace '<runOutputName>', $runOutputName) | Set-Content -Path $templateFilePath
-
-((Get-Content -path $templateFilePath -Raw) -replace '<imageDefName>', $imageDefName) | Set-Content -Path $templateFilePath
-((Get-Content -path $templateFilePath -Raw) -replace '<sharedImageGalName>', $sigGalleryName) | Set-Content -Path $templateFilePath
-((Get-Content -path $templateFilePath -Raw) -replace '<region1>', $location) | Set-Content -Path $templateFilePath
-((Get-Content -path $templateFilePath -Raw) -replace '<imgBuilderId>', $identityNameResourceId) | Set-Content -Path $templateFilePath
-((Get-Content -path $templateFilePath -Raw) -replace 'PlatformImageSKU', 'win11-24h2-avd-m365') | Set-Content -Path $templateFilePath
-
-#staging resource group
-New-AzResourceGroupDeployment -ResourceGroupName $imageResourceGroup -TemplateFile $templateFilePath -TemplateParameterObject @{"api-Version" = "2020-02-14"; "imageTemplateName" = $imageTemplateName; "svclocation" = $location }
-
-# Optional - if you have any errors running the preceding command, run:
-$getStatus = $(Get-AzImageBuilderTemplate -ResourceGroupName $imageResourceGroup -Name $imageTemplateName)
-$getStatus.ProvisioningErrorCode 
-$getStatus.ProvisioningErrorMessage
-
-Start-AzImageBuilderTemplate -ResourceGroupName $imageResourceGroup -Name $imageTemplateName -NoWait
-
-$getStatus = $(Get-AzImageBuilderTemplate -ResourceGroupName $imageResourceGroup -Name $imageTemplateName)
-# Shows all the properties
-$getStatus | Format-List -Property *
-
-# Shows the status of the build
-$getStatus.LastRunStatusRunState 
-$getStatus.LastRunStatusMessage
-$getStatus.LastRunStatusRunSubState
 
