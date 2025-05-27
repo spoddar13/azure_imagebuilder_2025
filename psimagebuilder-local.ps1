@@ -1,13 +1,10 @@
 #Connect-AzAccount
 
-#Timestamp
+#Get Timestamp
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
-# Step 1: Import module
+#Import module
 Import-Module Az.Accounts
-
-# Step 2: get existing context
-#$currentAzContext = Get-AzContext
 
 # Your subscription. This command gets your current subscription
 #Set Subscription
@@ -44,10 +41,8 @@ New-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identit
 $identityNameResourceId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName).Id
 $identityNamePrincipalId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName).PrincipalId
 
-#Downlaod JSON config file to assign permissions to the identity
-$myRoleImageCreationUrl = 'https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/RoleImageTemplate.json'
-$myRoleImageCreationPath = "NewRoleImageCreation.json"
-Invoke-WebRequest -Uri $myRoleImageCreationUrl -OutFile $myRoleImageCreationPath -UseBasicParsing
+Copy-Item -Path "./RoleImageTemplate.json" -Destination "./NewRoleImageCreation.json"
+$myRoleImageCreationPath = "./NewRoleImageCreation.json"
 
 #update role definition template
 $Content = Get-Content -Path $myRoleImageCreationPath -Raw
@@ -67,7 +62,6 @@ $RoleAssignParams = @{
 }
 New-AzRoleAssignment @RoleAssignParams
 
-
 $sigGalleryName = "MyImageGallary"
 $imageDefName = "win11avdmultiWithOffice"
 
@@ -78,8 +72,8 @@ New-AzGallery -GalleryName $sigGalleryName -ResourceGroupName $imageResourceGrou
 New-AzGalleryImageDefinition -GalleryName $sigGalleryName -ResourceGroupName $imageResourceGroup -Location $location -Name $imageDefName -OsState generalized -OsType 'Windows' -Publisher 'myCo' -Offer 'Windows' -Sku 'win11-24h2-avd-m365'
 
 
-$templateUrl = "https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/armTemplateWVD.json"
-$templateFilePath = "NewArmTemplateWVD.json"
+Copy-Item -Path "./RoleImageTemplate.json" -Destination "./NewArmTemplateWVD.json"
+$templateFilePath = "./NewArmTemplateWVD.json"
 
 Invoke-WebRequest -Uri $templateUrl -OutFile $templateFilePath -UseBasicParsing
 
@@ -113,5 +107,9 @@ $getStatus | Format-List -Property *
 $getStatus.LastRunStatusRunState 
 $getStatus.LastRunStatusMessage
 $getStatus.LastRunStatusRunSubState
+
+#Delete Local Created Files
+Remove-Item -Path $myRoleImageCreationPath -Force
+Remove-Item -Path $templateFilePath -Force
 
 
