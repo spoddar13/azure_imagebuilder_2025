@@ -21,7 +21,7 @@
             "location": "[parameters('svclocation')]",
             "dependsOn": [],
             "tags": {
-                "imagebuilderTemplate": "AzureImageBuilderSIG",
+                "imagebuilderTemplate": "AzureImageBuilderCustomeTest",
                 "userIdentity": "enabled"
             },
             "identity": {
