@@ -43,7 +43,22 @@
                     "sku": "PlatformImageSKU",
                     "version": "latest"
                 },
-                "customize": [],
+                "customize": [
+                    {
+                        "type": "PowerShell",
+                        "name": "installgooglechrome",
+                        "runElevated": true,
+                        "runAsSystem": true,
+                        "scriptUri": "https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/chrome.ps1"
+                    },
+                    {
+                        "type": "PowerShell",
+                        "name": "installnotepadpp",
+                        "runElevated": true,
+                        "runAsSystem": true,
+                        "scriptUri": "https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/notepadpp.ps1"
+                    }
+                ],
                 "distribute": [
                     {
                         "type": "SharedImage",
