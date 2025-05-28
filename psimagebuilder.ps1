@@ -21,7 +21,7 @@ $imageResourceGroup = "RG-" + $timestamp
 $location = "centralindia"
 
 # Image template name
-$imageTemplateName = "Win11AVDMultiSwithOffice"
+$imageTemplateName = "Win11AVDMultiSOffice"
 
 # Distribution properties object name (runOutput). Gives you the properties of the managed image on completion
 $runOutputName = "sigOutput"
@@ -35,7 +35,7 @@ $imageRoleDefName = "AzureImageBuilderImageDef-" + $timestamp
 $identityName = "MyIdentity" + $timestamp
 
 ## Add Azure PowerShell modules to support AzUserAssignedIdentity and Azure VM Image Builder
-'Az.ImageBuilder', 'Az.ManagedServiceIdentity' | ForEach-Object { Install-Module -Name $_ -AllowPrerelease }
+'Az.ImageBuilder', 'Az.ManagedServiceIdentity' | ForEach-Object { Install-Module -Name $_ -AllowPrerelease -Force -AllowClobber }
 
 # Create the identity
 New-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName -Location $location
@@ -87,7 +87,6 @@ Invoke-WebRequest -Uri $templateUrl -OutFile $templateFilePath -UseBasicParsing
 ((Get-Content -path $templateFilePath -Raw) -replace '<rgName>', $imageResourceGroup) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<region>', $location) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<runOutputName>', $runOutputName) | Set-Content -Path $templateFilePath
-
 ((Get-Content -path $templateFilePath -Raw) -replace '<imageDefName>', $imageDefName) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<sharedImageGalName>', $sigGalleryName) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<region1>', $location) | Set-Content -Path $templateFilePath

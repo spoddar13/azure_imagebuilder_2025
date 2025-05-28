@@ -32,7 +32,7 @@ $imageRoleDefName = "AzureImageBuilderImageDef-" + $timestamp
 $identityName = "MyIdentity" + $timestamp
 
 ## Add Azure PowerShell modules to support AzUserAssignedIdentity and Azure VM Image Builder
-'Az.ImageBuilder', 'Az.ManagedServiceIdentity' | ForEach-Object { Install-Module -Name $_ -AllowPrerelease }
+'Az.ImageBuilder', 'Az.ManagedServiceIdentity' | ForEach-Object { Install-Module -Name $_ -AllowPrerelease -Force -AllowClobber }
 
 # Create the identity
 New-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName -Location $location
@@ -75,13 +75,12 @@ New-AzGalleryImageDefinition -GalleryName $sigGalleryName -ResourceGroupName $im
 Copy-Item -Path "./RoleImageTemplate.json" -Destination "./NewArmTemplateWVD.json"
 $templateFilePath = "./NewArmTemplateWVD.json"
 
-Invoke-WebRequest -Uri $templateUrl -OutFile $templateFilePath -UseBasicParsing
+#Invoke-WebRequest -Uri $templateUrl -OutFile $templateFilePath -UseBasicParsing
 
 ((Get-Content -path $templateFilePath -Raw) -replace '<subscriptionID>', $subscriptionID) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<rgName>', $imageResourceGroup) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<region>', $location) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<runOutputName>', $runOutputName) | Set-Content -Path $templateFilePath
-
 ((Get-Content -path $templateFilePath -Raw) -replace '<imageDefName>', $imageDefName) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<sharedImageGalName>', $sigGalleryName) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<region1>', $location) | Set-Content -Path $templateFilePath
@@ -109,7 +108,7 @@ $getStatus.LastRunStatusMessage
 $getStatus.LastRunStatusRunSubState
 
 #Delete Local Created Files
-Remove-Item -Path $myRoleImageCreationPath -Force
-Remove-Item -Path $templateFilePath -Force
+#Remove-Item -Path $myRoleImageCreationPath -Force
+#Remove-Item -Path $templateFilePath -Force
 
 

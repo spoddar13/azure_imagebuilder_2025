@@ -50,7 +50,7 @@
                         "galleryImageId": "/subscriptions/<subscriptionID>/resourceGroups/<rgName>/providers/Microsoft.Compute/galleries/<sharedImageGalName>/images/<imageDefName>",
                         "runOutputName": "<runOutputName>",
                         "artifactTags": {
-                            "source": "wvd11MultiSwithOfice",
+                            "source": "wvd11MultiSOfice",
                             "baseosimg": "windows11"
                         },
                         "replicationRegions": [
