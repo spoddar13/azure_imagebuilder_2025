@@ -16,8 +16,5 @@ Stop-Service -Name "Google Update Service" -ErrorAction SilentlyContinue
 # Disable the Google Update Service startup
 Set-Service -Name "Google Update Service" -StartupType Disabled -ErrorAction SilentlyContinue
 
-# Modify the registry to disable automatic update checks
-New-Item -Path "HKLM:\SOFTWARE\Policies\Google\Update" -ErrorAction SilentlyContinue
-
 #RemovePath
 Remove-Item -Path "C:\temp" -Force -Recurse
