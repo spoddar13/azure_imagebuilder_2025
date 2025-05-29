@@ -1,10 +1,13 @@
 #Connect-AzAccount
 
-#Get Timestamp
+#Timestamp
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
-#Import module
+# Step 1: Import module
 Import-Module Az.Accounts
+
+# Step 2: get existing context
+#$currentAzContext = Get-AzContext
 
 # Your subscription. This command gets your current subscription
 #Set Subscription
@@ -18,7 +21,7 @@ $imageResourceGroup = "RG-" + $timestamp
 $location = "centralindia"
 
 # Image template name
-$imageTemplateName = "Win11AVDMultiSwithOffice"
+$imageTemplateName = "Win11AVDMultiSOffice"
 
 # Distribution properties object name (runOutput). Gives you the properties of the managed image on completion
 $runOutputName = "sigOutput"
@@ -36,21 +39,23 @@ $identityName = "MyIdentity" + $timestamp
 
 # Create the identity
 New-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName -Location $location
-
+Start-Sleep -Seconds 5
 #Store the identity resource and principal IDs in variables
 $identityNameResourceId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName).Id
 $identityNamePrincipalId = (Get-AzUserAssignedIdentity -ResourceGroupName $imageResourceGroup -Name $identityName).PrincipalId
-
-Copy-Item -Path "./RoleImageTemplate.json" -Destination "./NewRoleImageCreation.json"
-$myRoleImageCreationPath = "./NewRoleImageCreation.json"
-
+Start-Sleep -Seconds 5
+#Downlaod JSON config file to assign permissions to the identity
+$myRoleImageCreationUrl = 'https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/RoleImageTemplate.json'
+$myRoleImageCreationPath = "NewRoleImageCreation.json"
+Invoke-WebRequest -Uri $myRoleImageCreationUrl -OutFile $myRoleImageCreationPath -UseBasicParsing
+Start-Sleep -Seconds 5
 #update role definition template
 $Content = Get-Content -Path $myRoleImageCreationPath -Raw
 $Content = $Content -replace '<subscriptionID>', $subscriptionID
 $Content = $Content -replace '<rgName>', $imageResourceGroup
 $Content = $Content -replace 'Azure Image Builder Service Image Creation Role', $imageRoleDefName 
 $Content | Out-File -FilePath $myRoleImageCreationPath -Force
-
+Start-Sleep -Seconds 15
 #Create role definition
 New-AzRoleDefinition -InputFile $myRoleImageCreationPath
 
@@ -62,6 +67,7 @@ $RoleAssignParams = @{
 }
 New-AzRoleAssignment @RoleAssignParams
 
+
 $sigGalleryName = "MyImageGallary"
 $imageDefName = "win11avdmultiWithOffice"
 
@@ -72,10 +78,10 @@ New-AzGallery -GalleryName $sigGalleryName -ResourceGroupName $imageResourceGrou
 New-AzGalleryImageDefinition -GalleryName $sigGalleryName -ResourceGroupName $imageResourceGroup -Location $location -Name $imageDefName -OsState generalized -OsType 'Windows' -Publisher 'myCo' -Offer 'Windows' -Sku 'win11-24h2-avd-m365'
 
 
-Copy-Item -Path "./RoleImageTemplate.json" -Destination "./NewArmTemplateWVD.json"
-$templateFilePath = "./NewArmTemplateWVD.json"
+$templateUrl = "https://raw.githubusercontent.com/spoddar13/azure_imagebuilder_2025/main/armTemplateWVD.json"
+$templateFilePath = "NewArmTemplateWVD.json"
 
-#Invoke-WebRequest -Uri $templateUrl -OutFile $templateFilePath -UseBasicParsing
+Invoke-WebRequest -Uri $templateUrl -OutFile $templateFilePath -UseBasicParsing
 
 ((Get-Content -path $templateFilePath -Raw) -replace '<subscriptionID>', $subscriptionID) | Set-Content -Path $templateFilePath
 ((Get-Content -path $templateFilePath -Raw) -replace '<rgName>', $imageResourceGroup) | Set-Content -Path $templateFilePath
@@ -106,9 +112,3 @@ $getStatus | Format-List -Property *
 $getStatus.LastRunStatusRunState 
 $getStatus.LastRunStatusMessage
 $getStatus.LastRunStatusRunSubState
-
-#Delete Local Created Files
-#Remove-Item -Path $myRoleImageCreationPath -Force
-#Remove-Item -Path $templateFilePath -Force
-
-
